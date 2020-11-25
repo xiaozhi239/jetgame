@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.fatcat.jet.components.BombStrategy;
 import com.fatcat.jet.components.CoinStrategy;
+import com.fatcat.jet.components.HeroStrategy;
 
 public class JetGame extends ApplicationAdapter {
 	private SpriteBatch batch;
@@ -14,6 +15,7 @@ public class JetGame extends ApplicationAdapter {
 
 	private BombStrategy bombStrategy;
 	private CoinStrategy coinStrategy;
+	private HeroStrategy heroStrategy;
 
 	private enum GameState {
 		INACTIVE, ACTIVE
@@ -23,6 +25,7 @@ public class JetGame extends ApplicationAdapter {
 	private void reset() {
 		bombStrategy.init();
 		coinStrategy.init();
+		heroStrategy.init();
 	}
 	
 	@Override
@@ -30,6 +33,7 @@ public class JetGame extends ApplicationAdapter {
 		batch = new SpriteBatch();
 		background = new Texture("bg.jpg");
 
+		heroStrategy = new HeroStrategy();
 		bombStrategy = new BombStrategy();
 		coinStrategy = new CoinStrategy();
 
@@ -41,6 +45,7 @@ public class JetGame extends ApplicationAdapter {
 		batch.begin();
 		batch.draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
+		heroStrategy.play(batch);
 		coinStrategy.play(batch);
 		bombStrategy.play(batch);
 		batch.end();
