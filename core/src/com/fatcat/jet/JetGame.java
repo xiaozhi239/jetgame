@@ -5,29 +5,50 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.fatcat.jet.components.BombStrategy;
+import com.fatcat.jet.components.CoinStrategy;
 
 public class JetGame extends ApplicationAdapter {
-	SpriteBatch batch;
-	Texture img;
+	private SpriteBatch batch;
+	private Texture background;
+
+	private BombStrategy bombStrategy;
+	private CoinStrategy coinStrategy;
+
+	private enum GameState {
+		INACTIVE, ACTIVE
+	}
+	private GameState gameState = GameState.INACTIVE;
+
+	private void reset() {
+		bombStrategy.init();
+		coinStrategy.init();
+	}
 	
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
-		img = new Texture("badlogic.jpg");
+		background = new Texture("bg.jpg");
+
+		bombStrategy = new BombStrategy();
+		coinStrategy = new CoinStrategy();
+
+		reset();
 	}
 
 	@Override
 	public void render () {
-		Gdx.gl.glClearColor(1, 0, 0, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		batch.begin();
-		batch.draw(img, 0, 0);
+		batch.draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+		coinStrategy.play(batch);
+		bombStrategy.play(batch);
 		batch.end();
 	}
 	
 	@Override
 	public void dispose () {
 		batch.dispose();
-		img.dispose();
+		background.dispose();
 	}
 }
