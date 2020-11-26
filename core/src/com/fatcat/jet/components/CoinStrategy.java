@@ -3,6 +3,7 @@ package com.fatcat.jet.components;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
 import com.fatcat.jet.utils.Location;
 
@@ -18,10 +19,15 @@ public class CoinStrategy {
     private static final int COIN_SPEED = 6;
 
     private List<Location> locations;
-    private List<Rectangle> coinRects = new ArrayList<>();
     private Texture coin;
     private int pace;
     private Random random;
+
+    private TriggerHandler handler;
+
+    public CoinStrategy(TriggerHandler handler) {
+        this.handler = handler;
+    }
 
     public void init() {
         coin = new Texture("coin.png");
@@ -30,37 +36,35 @@ public class CoinStrategy {
         random = new Random();
     }
 
-    public void play(SpriteBatch batch) {
+    public void play(SpriteBatch batch, Rectangle hero) {
         if (pace < COIN_INTERVAL) {
             pace++;
         } else {
             pace = 0;
             makeCoin();
         }
-        draw(batch);
+        draw(batch, hero);
     }
 
-    private boolean draw(SpriteBatch batch) {
-        coinRects.clear();
-
+    private void draw(SpriteBatch batch, Rectangle hero) {
         Set<Location> removed = new HashSet<>();
         for (Location location : locations) {
             batch.draw(coin, location.getX(), location.getY());
-            coinRects.add(new Rectangle(
-                    location.getX(), location.getY(), coin.getWidth(), coin.getHeight()));
+            Rectangle rectangle = new Rectangle(
+                    location.getX(), location.getY(), coin.getWidth(), coin.getHeight());
+            if (Intersector.overlaps(hero, rectangle)) {
+                removed.add(location);
+                handler.handle();
+                continue;
+            }
             int newX = location.getX() - COIN_SPEED;
             if (newX > -coin.getWidth()) {
                 location.update(newX, location.getY());
             } else {
-                removed.add(location);
+                removed.add(location);  // moved outside of the screen entirely
             }
-//            if (Intersector.overlaps(manRect, bombRects.get(i))) {
-//                Gdx.app.log("Bomb!", "Hit one bomb");
-//                gameState = GameState.INACTIVE;
-//            }
         }
         locations.removeAll(removed);
-        return true;
     }
 
     private void makeCoin() {

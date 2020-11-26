@@ -1,6 +1,7 @@
 package com.fatcat.jet.components;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.math.Intersector;
 import com.fatcat.jet.utils.Location;
 
 import com.badlogic.gdx.graphics.Texture;
@@ -19,10 +20,16 @@ public class BombStrategy {
     private static final int BOMB_SPEED = 8;
 
     private List<Location> locations;
-    private List<Rectangle> bombRects = new ArrayList<>();
     private Texture bomb;
     private int pace;
     private Random random;
+
+    private TriggerHandler handler;
+
+    public BombStrategy(TriggerHandler handler) {
+        this.handler = handler;
+    }
+
 
     public void init() {
         bomb = new Texture("bomb.png");
@@ -31,34 +38,31 @@ public class BombStrategy {
         random = new Random();
     }
 
-    public void play(SpriteBatch batch) {
+    public void play(SpriteBatch batch, Rectangle hero) {
         if (pace < BOMB_INTERVAL) {
             pace++;
         } else {
             pace = 0;
             makeBomb();
         }
-        draw(batch);
+        draw(batch, hero);
     }
 
-    private boolean draw(SpriteBatch batch) {
-        bombRects.clear();
-
+    private boolean draw(SpriteBatch batch, Rectangle hero) {
         Set<Location> removed = new HashSet<>();
         for (Location location : locations) {
             batch.draw(bomb, location.getX(), location.getY());
-            bombRects.add(new Rectangle(
-                    location.getX(), location.getY(), bomb.getWidth(), bomb.getHeight()));
+            Rectangle rectangle = new Rectangle(
+                    location.getX(), location.getY(), bomb.getWidth(), bomb.getHeight());
             int newX = location.getX() - BOMB_SPEED;
             if (newX > -bomb.getWidth()) {
                 location.update(newX, location.getY());
             } else {
                 removed.add(location);
             }
-//            if (Intersector.overlaps(manRect, bombRects.get(i))) {
-//                Gdx.app.log("Bomb!", "Hit one bomb");
-//                gameState = GameState.INACTIVE;
-//            }
+            if (Intersector.overlaps(hero, rectangle)) {
+                handler.handle();
+            }
         }
         locations.removeAll(removed);
         return true;
